@@ -4,6 +4,7 @@ const server = require("http").Server(app);
 const io = require("socket.io")(server);
 const path = require("path");
 
+const port = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, "./static")));
 
 app.set("view engine", "ejs");
@@ -31,6 +32,6 @@ io.on("connection", function(socket) {
   });
 });
 
-server.listen(3000, function() {
+server.listen(port, function() {
   console.log("listening on *:3000");
 });
