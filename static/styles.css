@@ -123,11 +123,50 @@ h1 {
   animation-iteration-count: infinite;
 }
 
+.glow1{
+  animation-name: glow1;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+.glow2{
+  animation-name: glow2;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+.glow3{
+  animation-name: glow3;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
+@keyframes glow1 {
+  0%   {color: #df1819;}
+  25%  {color: #e0bc3e;}
+  50%  {color: #3de447;}
+  75% {color: #37fefe;}
+  100% {color: #df1819;}
+}
+
+@keyframes glow2 {
+  0%   {color: #df1819;}
+  25%  {color: #df3ff6;}
+  50%  {color: #0404ff;}
+  75% {color: #df1819;}
+  100% {color: #df1819;}
+}
+
+@keyframes glow3 {
+  0%   {color: white;}
+  25%  {color: #3de447;}
+  50%  {color: white;}
+  75% {color: #37fefe;}
+  100% {color: white;}
+}
+
 @keyframes scroll {
   0%   {padding-left:100%;width: 200vw;}
   100% {padding-left:0%;width: 100vw;}
 }
-
 
 @keyframes flash1 {
   0%   {color: #e0bc3e;}
@@ -151,4 +190,18 @@ h1 {
   50%  {color: #96ff9b;}
   99%  {color: #96ff9b;}
   100% {color: #3de447;}
+}
+
+::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+  color: #1917ee;
+  font-size:30px;
+  opacity: 1; /* Firefox */
+}
+
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+  color: #1917ee;
+}
+
+::-ms-input-placeholder { /* Microsoft Edge */
+  color: #1917ee;
 }
