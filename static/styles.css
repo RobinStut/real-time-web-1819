@@ -139,6 +139,42 @@ h1 {
   animation-iteration-count: infinite;
 }
 
+.wave span{
+  position: relative;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
+.wave .sp1{
+  animation-name: wave1;
+  
+}
+.wave .sp2{
+  animation-name: wave1;
+  animation-delay: .4s;
+}
+.wave .sp3{
+  animation-name: wave1;
+  animation-delay: .8s;
+  
+}
+.wave .sp4{
+  animation-name: wave1;
+  animation-delay: 1.2s;
+  
+}
+.wave .sp5{
+  animation-name: wave1;
+  animation-delay: 1.6s;
+ 
+}
+
+@keyframes wave1 {
+  0%   {bottom: 0;}
+  50%  {bottom: 10px;}
+  100% {bottom: 0;}
+}
+
 @keyframes glow1 {
   0%   {color: #df1819;}
   25%  {color: #e0bc3e;}
