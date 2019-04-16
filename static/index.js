@@ -54,6 +54,5 @@ function message(msg) {
     text = span;
   }
 
-
   return [text, style];
 }
