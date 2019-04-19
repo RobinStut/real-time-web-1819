@@ -24,3 +24,6 @@ Nadat jouw gegevens zijn opgezocht bij punt 2, worden jouw gegevens geanimeerd i
 ## Datamodel
 
 ![dataLiveCycle](dataLiveCycle.png)
+
+
+In dit datamodel wordt de communicatie tussen API's en de diverse javascript onderdelen beschreven. Hierdoor is visueel te zien hoe alles achter de schermen werkt voor de gebruiker
