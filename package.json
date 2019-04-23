@@ -27,7 +27,10 @@
     "find-cache-dir": "^2.1.0",
     "node-fetch": "^2.3.0",
     "nodemon": "^1.18.10",
+    "npm-check": "^5.9.0",
+    "overheid.io": "^1.0.1",
     "path": "^0.12.7",
+    "request": "^2.88.0",
     "socket.io": "^2.2.0"
   }
 }

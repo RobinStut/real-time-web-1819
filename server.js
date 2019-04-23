@@ -2,12 +2,12 @@ const express = require("express");
 const app = express();
 const fetch = require("node-fetch");
 const server = require("http").Server(app);
+const request = require('request');
 const io = require("socket.io")(server);
 const path = require("path");
 
 const port = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, "./static")));
-
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
@@ -23,20 +23,48 @@ function fetchData() {
   })
 }
 
-app.get("/", async (req, res) => {
-  try {
-    const data = await fetchData()
-      .then(data => filter(data))
-      .then(render => {
-        res.render("pages/index", {
-          ANWB: render
-        });
-      });
+console.log('test');
 
-  } catch (error) {
-    console.log(error);
+app.get("/", (req, res) => {
+  var options = {
+    url:
+      "https://api.overheid.io/voertuiggegevens/47XBFJ",
+    headers: {
+      "Content-Type": "application/json",
+      "ovio-api-key": "cb4a5098d72831700cb8dfe2111a783f2d114eadf910dff79a902a619877dd39",
+    }
+  };
+
+  function callback(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      var data = JSON.parse(body);
+      console.log(data);
+      res.render("../views/pages/index.ejs", {
+        data: data.payload
+      });
+    } else {
+      console.log(error);
+    }
   }
+  request(options, callback);
 });
+
+
+// app.get("/", async (req, res) => {
+//   try {
+//     const data = await fetchData()
+//       .then(data => filter(data))
+//       .then(render => {
+//         res.render("pages/index", {
+//           ANWB: render
+//         });
+//       });
+
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
+
 
 function filter(x) {
   const road = x.roadEntries.map(obj => {
