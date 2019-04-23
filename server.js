@@ -88,42 +88,40 @@ function filterANWB(x) {
   })
 }
 
-io.on("connection", function (socket) {
+io.on("connection", async function (socket) {
   async function openRequest() {
     try {
-      const data = await dataANWB()
+      let data = await dataANWB()
         .then(data => filterANWB(data))
         .then((data) => {
-          // console.log('datacheck  ' + data)
-          const test = data.map(obj => { return obj.events.trafficJams });
-          // console.log(test);
-          test.map(obj => {
+          let detailedInfo = data.map(obj => { return obj.events.trafficJams });
+          detailedInfo = detailedInfo.map(obj => {
             if (typeof obj[0] == 'object') {
-              // console.log(obj[0]);
               var dataset = {
                 delay: obj[0].delay,
                 distance: obj[0].distance,
                 from: obj[0].from,
-                to: obj[0].to
+                to: obj[0].to,
+                location: obj[0].location
               }
-              console.log(dataset);
-              // return [obj[0]]
+              // console.log(dataset);
+              return dataset
             }
           })
+          // console.log(detailedInfo);
+          return (detailedInfo)
         })
-      // .then((data) => {
-      //   // console.log('datacheck  ' + data)
-      //   data.events.trafficJams.map(obj => { console.log(obj); })
-      // })
-
-
+      // console.log(data);
+      return (data);
+      // resolve(data)
     } catch (error) {
       console.log(error);
     }
   }
+  // console.log(await openRequest());
   console.log("a user connected");
-  const result = openRequest();
-
+  const result = await openRequest();
+  console.log(result);
 
 
   socket.emit('eventHere', { hello: result });
