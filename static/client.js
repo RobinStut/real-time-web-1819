@@ -4,7 +4,8 @@ var socket = io();
 
 (function () {
   var socket = io();
-  socket.on("chat message", function (msg) {
+  socket.on('eventHere', function (data) {
+    console.log(data);
   });
 })();
 

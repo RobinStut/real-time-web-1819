@@ -8,6 +8,14 @@
 <body>
   <% include ../partials/nav %>
 
+  <form class="search" action="/" method="POST" enctype="application/x-www-form-urlencoded">
+    <fieldset>
+      <legend></legend>
+      <input value="" type="input" id="searchValue" name="search" required minlength="1" placeholder="PB-340-B">
+      <button id="searchBtn" type="submit">&#128269;</button>
+    </fieldset>
+  </form>
+
 
   <% include ../partials/footer %>
 </body>
