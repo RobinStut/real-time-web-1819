@@ -1,7 +1,10 @@
 const express = require("express");
 const app = express();
 const fetch = require("node-fetch");
+const http = require("http");
+const https = require('https');
 const server = require("http").Server(app);
+const fs = require('fs');
 const io = require("socket.io")(server);
 const path = require("path");
 const bodyParser = require('body-parser');
@@ -13,6 +16,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+
+
+fs.readFile("lastAPICall.txt", function (err, buf) {
+  console.log(buf.toString());
+});
+
+
 
 
 
@@ -76,10 +86,12 @@ function dataANWB() {
 function filterANWB(x) {
   return new Promise(async (resolve, reject) => {
     const road = x.roadEntries.map(obj => {
+      // console.log(obj);
 
 
       return (obj);
     })
+    console.log(x.dateTime);
     // console.log(road);
     // road = JSON.parse(road)
 
@@ -88,10 +100,16 @@ function filterANWB(x) {
   })
 }
 
+
+
+
+
+
 io.on("connection", async function (socket) {
   async function openRequest() {
     try {
       let data = await dataANWB()
+        // .then(console.log(data))
         .then(data => filterANWB(data))
         .then((data) => {
           let detailedInfo = data.map(obj => { return obj.events.trafficJams });
@@ -118,11 +136,14 @@ io.on("connection", async function (socket) {
       console.log(error);
     }
   }
+
+
   // console.log(await openRequest());
   console.log("a user connected");
   const result = await openRequest();
-  console.log(result);
+  // console.log(result);
 
+  // socket.to(`${socketId}`).emit('eventHere', { hello: result });
 
   socket.emit('eventHere', { hello: result });
 
