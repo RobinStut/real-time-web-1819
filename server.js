@@ -1,10 +1,7 @@
 const express = require("express");
 const app = express();
 const fetch = require("node-fetch");
-const http = require("http");
-const https = require('https');
 const server = require("http").Server(app);
-const fs = require('fs');
 const io = require("socket.io")(server);
 const path = require("path");
 const bodyParser = require('body-parser');
@@ -13,16 +10,11 @@ const API_key = process.env.API_key;
 const port = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, "./static")));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
-
-fs.readFile("lastAPICall.txt", function (err, buf) {
-  console.log(buf.toString());
-});
-
-
 
 
 
@@ -30,7 +22,11 @@ app.post("/", async (req, res) => {
   var searchValue = req.body.search;
   console.log("search value =", searchValue)
   try {
-    const data = await dataKenteken(searchValue)
+    // const data = await dataKenteken(searchValue)
+    io.on("connection", async function (socket) {
+      // io.on.emit('hey', searchValue);
+      socket.emit('eventHere', 'test');
+    })
   } catch (error) {
     console.log(error);
   }
@@ -64,7 +60,9 @@ function dataKenteken(searchValue) {
       })
       let data = await result.json()
       console.log(data);
+
       resolve(data)
+
     } catch (error) {
       reject(error);
     }
@@ -84,35 +82,27 @@ function dataANWB() {
 }
 
 function filterANWB(x) {
+  // console.log('77');
+  // console.log(x.dateTime);ç
+  // console.log('dateTime = '+dateAndTime);
   return new Promise(async (resolve, reject) => {
     const road = x.roadEntries.map(obj => {
-      // console.log(obj);
-
-
       return (obj);
     })
-    console.log(x.dateTime);
-    // console.log(road);
-    // road = JSON.parse(road)
-
     resolve(road)
-
   })
+
 }
-
-
-
-
-
 
 io.on("connection", async function (socket) {
   async function openRequest() {
     try {
       let data = await dataANWB()
-        // .then(console.log(data))
         .then(data => filterANWB(data))
         .then((data) => {
-          let detailedInfo = data.map(obj => { return obj.events.trafficJams });
+          let detailedInfo = data.map(obj => {
+            return obj.events.trafficJams
+          });
           detailedInfo = detailedInfo.map(obj => {
             if (typeof obj[0] == 'object') {
               var dataset = {
@@ -136,16 +126,19 @@ io.on("connection", async function (socket) {
       console.log(error);
     }
   }
-
-
   // console.log(await openRequest());
-  console.log("a user connected");
-  const result = await openRequest();
+  // console.log("a user connected");
+
   // console.log(result);
 
-  // socket.to(`${socketId}`).emit('eventHere', { hello: result });
-
-  socket.emit('eventHere', { hello: result });
+  async function anwbAPICall() {
+    const result = await openRequest();
+    socket.emit('eventHere', {
+      anwb: result
+    });
+  }
+  anwbAPICall();
+  setInterval(anwbAPICall, 3000);
 
   socket.on("disconnect", function () {
     console.log("user disconnected");
