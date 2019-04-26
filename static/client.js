@@ -1,6 +1,6 @@
 console.log("working on it");
 
-var socket = io();
+// var socket = io();
 var anwbData;
 
 (function () {
@@ -26,7 +26,77 @@ function dataRender(data) {
     item.innerHTML = "test";
     item.insertAdjacentHTML("beforeend", x);
   })
+}
 
+const form = document.getElementById('form')
+form.addEventListener('submit', function (e) {
+  e.preventDefault()
+  const searchValue = document.getElementById('searchValue');
+  fetch(`/kenteken/${searchValue.value}`)
+    .then(res => res.json()
+      .then(data => console.log(data))
+      .then(data => barChart(24)))
+})
+
+
+function barChart(valueData) {
+  console.log('test');
+
+  var w = 300;
+  var h = 120;
+  var padding = 2;
+  var dataset = [valueData, 23, 18, 9, 7];
+  var svg = d3.select("article").append("svg")
+    .attr("width", w)
+    .attr("height", h);
+
+  function colorPicker(v) {
+    if (v <= 20) {
+      return "#666666";
+    } else if (v > 20) {
+      return "#FF0033";
+    }
+  }
+
+  svg.selectAll("rect")
+    .data(dataset)
+    .enter()
+    .append("rect")
+    .attr({
+      "x": function (d, i) {
+        return i * (w / dataset.length);
+      },
+      "y": function (d) {
+        return h - (d * 4);
+      },
+      "width": w / dataset.length - padding,
+      "height": function (d) {
+        return d * 4;
+      },
+      "fill": function (d) {
+        return colorPicker(d);
+      }
+    });
+
+  svg.selectAll("text")
+    .data(dataset)
+    .enter()
+    .append("text")
+    .text(function (d) {
+      return d;
+    })
+    .attr({
+      "text-anchor": "middle",
+      x: function (d, i) {
+        return i * (w / dataset.length) + (w / dataset.length - padding) / 2;
+      },
+      y: function (d) {
+        return h - (d * 4) + 14;
+      },
+      "font-family": "sans-serif",
+      "font-size": 10,
+      "fill": "#ffffff"
+    })
 }
 
 function remove(id) {
@@ -39,19 +109,17 @@ async function dataChange(value) {
   var d3Data = [];
   var re = /([\w]+[\d]+)/;
   anwbData = await anwbData.map(x => {
-    if (x !== null && x.delay > 0) {
+    if (x !== null && x.delay > 600) {
       // console.log(x);
       var test = {
         name: x.location,
         value: x.delay
       }
-      console.log(test);
+      // console.log(test);
       d3Data.push(test)
     }
-
-
   })
-  console.log(d3Data);
+  // console.log(d3Data);
 
   writeProgram(d3Data)
 

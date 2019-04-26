@@ -19,3 +19,23 @@ path {
     stroke: #ccc;
     stroke-width: 0px;
 }
+
+
+.barchart {
+    width: 50%;
+    height: 20vw;
+}
+
+.barText {
+    font-size: 2vw;
+}
+
+.tooltip {
+    position: absolute;
+    display: none;
+    /*   height: auto; */
+    background: none repeat scroll 0 0 #ffffff;
+    border: 1px solid #6F257F;
+    padding: 14px;
+    text-align: center;
+}

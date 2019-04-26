@@ -17,21 +17,6 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 
-
-app.post("/", async (req, res) => {
-  var searchValue = req.body.search;
-  console.log("search value =", searchValue)
-  try {
-    // const data = await dataKenteken(searchValue)
-    io.on("connection", async function (socket) {
-      // io.on.emit('hey', searchValue);
-      socket.emit('eventHere', 'test');
-    })
-  } catch (error) {
-    console.log(error);
-  }
-});
-
 app.get("/", async (req, res) => {
   try {
     const data = await dataANWB()
@@ -82,9 +67,6 @@ function dataANWB() {
 }
 
 function filterANWB(x) {
-  // console.log('77');
-  // console.log(x.dateTime);ç
-  // console.log('dateTime = '+dateAndTime);
   return new Promise(async (resolve, reject) => {
     const road = x.roadEntries.map(obj => {
       return (obj);
@@ -126,10 +108,15 @@ io.on("connection", async function (socket) {
       console.log(error);
     }
   }
-  // console.log(await openRequest());
-  // console.log("a user connected");
 
-  // console.log(result);
+  app.get("/kenteken/:id", async function (req, res) {
+    var searchValue = req.params.id;
+    console.log("search value =", searchValue)
+    // const data = await dataKenteken(searchValue)
+    // console.log(data);
+    res.json(searchValue)
+
+  });
 
   async function anwbAPICall() {
     const result = await openRequest();
