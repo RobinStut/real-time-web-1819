@@ -7,7 +7,10 @@ const path = require("path");
 const bodyParser = require('body-parser');
 require("dotenv").config();
 const API_key = process.env.API_key;
+const fireBase_key = process.env.fireBase_key;
+const fireBase_id = process.env.fireBase_id;
 const port = process.env.PORT || 3000;
+const fs = require('fs');
 app.use(express.static(path.join(__dirname, "./static")));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -16,6 +19,14 @@ app.use(bodyParser.urlencoded({
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+// import util from 'util'
+// import fs from 'fs'
+// import path from 'path'
+
+// const readFile = util.promisify(fs.readFile)
+// const writeFile = util.promisify(fs.writeFile)
+
+const databasePath = path.join(__dirname, './kentekenAPIdata.json')
 
 app.get("/", async (req, res) => {
   try {
@@ -32,7 +43,15 @@ app.get("/", async (req, res) => {
   }
 });
 
+const admin = require('firebase-admin');
 
+var serviceAccount = require('./static/realtimeweb-robinstut-firebase-adminsdk-5ejoj-bd02b49279.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+var db = admin.firestore();
 
 function dataKenteken(searchValue) {
   return new Promise(async (resolve, reject) => {
@@ -66,66 +85,131 @@ function dataANWB() {
   })
 }
 
-function filterANWB(x) {
-  return new Promise(async (resolve, reject) => {
-    const road = x.roadEntries.map(obj => {
-      return (obj);
-    })
-    resolve(road)
-  })
+function filterANWB(data) {
+  var filteredANWBObjects = {}
+  var trafficJams = []
+  var roadEntriesCount = "";
 
+  for (var i = 0; i < 9; i++) {
+
+    if (data.roadEntries[i].events.trafficJams.length > 0) {
+      var lenghtOfTrafficJams = data.roadEntries[i].events.trafficJams.length
+      var y = "";
+      for (var y = 0; y < lenghtOfTrafficJams; y++) {
+        trafficJams.push({
+          location: data.roadEntries[i].events.trafficJams[y].location,
+          lat: data.roadEntries[i].events.trafficJams[y].fromLoc.lat,
+          long: data.roadEntries[i].events.trafficJams[y].fromLoc.lon,
+          delay: data.roadEntries[i].events.trafficJams[y].delay,
+          distance: data.roadEntries[i].events.trafficJams[y].distance
+        })
+      }
+    }
+    roadEntriesCount = roadEntriesCount + i;
+  }
+
+  filteredANWBObjects.date = data.dateTime
+  filteredANWBObjects.trafficJams = trafficJams
+
+  return filteredANWBObjects
 }
 
 io.on("connection", async function (socket) {
   async function openRequest() {
+    // console.log('openRequest aangeroepen');
     try {
       let data = await dataANWB()
         .then(data => filterANWB(data))
-        .then((data) => {
-          let detailedInfo = data.map(obj => {
-            return obj.events.trafficJams
-          });
-          detailedInfo = detailedInfo.map(obj => {
-            if (typeof obj[0] == 'object') {
-              var dataset = {
-                delay: obj[0].delay,
-                distance: obj[0].distance,
-                from: obj[0].from,
-                to: obj[0].to,
-                location: obj[0].location
-              }
-              // console.log(dataset);
-              return dataset
-            }
-          })
-          // console.log(detailedInfo);
-          return (detailedInfo)
-        })
-      // console.log(data);
       return (data);
-      // resolve(data)
     } catch (error) {
       console.log(error);
     }
   }
-
-  app.get("/kenteken/:id", async function (req, res) {
-    var searchValue = req.params.id;
-    console.log("search value =", searchValue)
-    // const data = await dataKenteken(searchValue)
-    // console.log(data);
-    res.json(searchValue)
-
-  });
+  // openRequest()
 
   async function anwbAPICall() {
-    const result = await openRequest();
-    socket.emit('eventHere', {
-      anwb: result
+    // console.log('anwbAPICall aangeroepen');
+    const resultOfANWBdataRequest = await openRequest();
+    // console.log(resultOfANWBdataRequest);
+    socket.emit('anwbDataObject', {
+      anwbData: resultOfANWBdataRequest
     });
   }
   anwbAPICall();
-  setInterval(anwbAPICall, 3000);
+  // setInterval(anwbAPICall, 3000);
+
+  app.get("/kenteken/:id", async function (req, res) {
+    var searchValue = req.params.id.toUpperCase();
+    console.log("search value =", searchValue)
+
+    db.collection('kenteken').get()
+      .then(async (snapshot) => {
+        var alreadyExist = false;
+        snapshot.forEach((doc) => {
+          if (doc.id === searchValue) {
+            alreadyExist = true;
+          }
+        });
+        if (alreadyExist === true) {
+          var matchingResult = db.collection('kenteken');
+          var allResultsInDb = [];
+
+          var allRetreivedResults = await matchingResult.get()
+            .then(snapshot => {
+              snapshot.forEach(doc => {
+                allResultsInDb.push({
+                  id: doc.id,
+                  data: doc.data()
+                }, )
+              });
+            })
+
+          var retreivedMatchingResult = await matchingResult.doc(searchValue).get()
+            .then(async doc => {
+              return doc.data()
+            })
+
+          // console.log(allResultsInDb);
+          socket.emit('kentekenData', {
+            specificData: retreivedMatchingResult,
+            allData: allResultsInDb
+          });
+        }
+        if (alreadyExist === false) {
+          try {
+            getData()
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      })
+      .catch((err) => {
+        console.log('Error getting documents', err);
+      });
+
+
+    async function getData() {
+      const data = await dataKenteken(searchValue)
+      addToDatabase(data)
+
+    }
+
+    function addToDatabase(data) {
+      var docRef = db.collection('kenteken').doc(data.kenteken);
+      var addKentekenDataToDatabase = docRef.set(data);
+    }
+
+  });
+
+  // async function anwbAPICall() {
+  //   const result = await openRequest();
+
+  //   socket.emit('eventHere', {
+  //     anwb: result
+  //   });
+  // }
+  // anwbAPICall();
+  // setInterval(anwbAPICall, 180000);
 
   socket.on("disconnect", function () {
     console.log("user disconnected");

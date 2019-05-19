@@ -1,28 +1,25 @@
 console.log("working on it");
 
-// var socket = io();
 var anwbData;
 
 (function () {
   var socket = io();
-  socket.on('eventHere', function (data) {
+  socket.on('anwbDataObject', function (data) {
+    // console.log(data);
+    anwbData = data;
     document.getElementById('anwbData').innerHTML = '';
-    dataChange(data)
-    // dataRender(anwbData)
   });
-  socket.on('hey', function (data) {
+  socket.on('kentekenData', function (data) {
     console.log(data);
   });
+
 })();
 
 
 function dataRender(data) {
-  // console.log(data);
   var item = document.getElementById('anwbData')
-  // console.log(item);
 
   data.map(x => {
-    // console.log(x);
     item.innerHTML = "test";
     item.insertAdjacentHTML("beforeend", x);
   })
@@ -31,30 +28,127 @@ function dataRender(data) {
 const form = document.getElementById('form')
 form.addEventListener('submit', function (e) {
   e.preventDefault()
+
+  var location = navigator.geolocation.getCurrentPosition(success, error);
+  var kentekenData
+
   const searchValue = document.getElementById('searchValue');
+  console.log(searchValue.value);
+
   fetch(`/kenteken/${searchValue.value}`)
-    .then(res => res.json()
-      .then(data => console.log(data))
-      .then(data => barChart(24)))
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      kentekenData = data;
+      return data
+    })
+
 })
 
+function success(pos) {
+  var lat = pos.coords.latitude;
+  var long = pos.coords.longitude;
+  var amountOfTrafficJams = anwbData.anwbData.trafficJams.length;
+  var y = "";
+  var trafficJamDistances = []
+  console.log(`lat = ${lat}, long = ${long}`);
 
+  for (var y = 0; y < amountOfTrafficJams; y++) {
+    var specificLat = anwbData.anwbData.trafficJams[y].lat;
+    var specificLong = anwbData.anwbData.trafficJams[y].long;
+    trafficJamDistances.push({
+      distanceOfYourPosition: getDistanceFromLatLonInKm(lat, long, specificLat, specificLong),
+      anwbData: anwbData.anwbData.trafficJams[y],
+    })
+  }
+
+  trafficJamDistances.sort(function (a, b) {
+    return a.distanceOfYourPosition - b.distanceOfYourPosition;
+  });
+
+  console.log(trafficJamDistances);
+  // getDistanceFromLatLonInKm(lat, long, 52.353761, 4.638322)
+}
+
+function error(err) {
+  console.warn(`ERROR(${err.code}): ${err.message}`);
+}
+
+function remove(id) {
+  var item = document.getElementById(id)
+  document.getElementById(id).innerHTML = "";
+}
+
+async function dataChange(value) {
+  anwbData = Object.entries(value)[0][1];
+  var d3Data = [];
+  var re = /([\w]+[\d]+)/;
+  anwbData = await anwbData.map(x => {
+    if (x !== null && x.delay > 600) {
+      var test = {
+        name: x.location,
+        value: x.delay
+      }
+      d3Data.push(test)
+    }
+  })
+
+  writeProgram(d3Data)
+
+}
+
+//  bron: http://www.movable-type.co.uk/scripts/latlong.html
+
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+  var R = 6371; // Radius of the earth in km
+  var dLat = deg2rad(lat2 - lat1); // deg2rad below
+  var dLon = deg2rad(lon2 - lon1);
+  var a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c; // Distance in km
+  // console.log(`${d.toFixed(1)}Km`);
+  return d.toFixed(1);
+}
+
+function deg2rad(deg) {
+  return deg * (Math.PI / 180)
+}
+
+// D3 
 function barChart(valueData) {
-  console.log('test');
+  var legenda = document.getElementById('legenda')
+  legenda.innerHTML = "<p>test</p>";
 
-  var w = 300;
-  var h = 120;
+  console.log('test');
+  var w = 200;
+  var h = 200;
   var padding = 2;
-  var dataset = [valueData, 23, 18, 9, 7];
+  var dataset = [valueData, 5.8,
+    11,
+    5.2,
+    8.2
+  ];
   var svg = d3.select("article").append("svg")
     .attr("width", w)
     .attr("height", h);
 
   function colorPicker(v) {
-    if (v <= 20) {
-      return "#666666";
-    } else if (v > 20) {
-      return "#FF0033";
+    if (v === 5.8) {
+      return "#743bef";
+    }
+    if (v === 11) {
+      return "#4286f4";
+    }
+    if (v === 5.2) {
+      return "#41dcf4";
+    }
+    if (v === 8.2) {
+      return "#41f4b2";
+    } else {
+      return "#ef9c3e";
     }
   }
 
@@ -99,37 +193,9 @@ function barChart(valueData) {
     })
 }
 
-function remove(id) {
-  var item = document.getElementById(id)
-  document.getElementById(id).innerHTML = "";
-}
-
-async function dataChange(value) {
-  anwbData = Object.entries(value)[0][1];
-  var d3Data = [];
-  var re = /([\w]+[\d]+)/;
-  anwbData = await anwbData.map(x => {
-    if (x !== null && x.delay > 600) {
-      // console.log(x);
-      var test = {
-        name: x.location,
-        value: x.delay
-      }
-      // console.log(test);
-      d3Data.push(test)
-    }
-  })
-  // console.log(d3Data);
-
-  writeProgram(d3Data)
-
-}
-
-
-
 function writeProgram(data) {
 
-  var width = 700,
+  var width = 900,
     height = 500,
     radius = Math.min(width, height) / 2;
 
@@ -154,7 +220,7 @@ function writeProgram(data) {
     .attr("width", width)
     .attr("height", height)
     .append("g")
-    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+    .attr("transform", "translate(" + width / 3 + "," + height / 2 + ")");
   var g = svg.selectAll(".arc")
     .data(pie(data))
     .enter()

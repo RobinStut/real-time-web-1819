@@ -10,9 +10,6 @@ body {
     text-align: center;
 }
 
-svg {
-    /*filter: url('#dropshadow');*/
-}
 
 path {
     cursor: pointer;
@@ -37,5 +34,40 @@ path {
     background: none repeat scroll 0 0 #ffffff;
     border: 1px solid #6F257F;
     padding: 14px;
+    text-align: center;
+}
+
+fieldset {
+    border: 0;
+}
+
+#searchValue {
+    width: 300px;
+    height: 60px;
+    background-color: #fcbc02;
+    border: #013299 5px solid;
+    border-radius: 7px;
+    border-left-width: 30px;
+    padding-top: 0;
+    color: black;
+    font-family: sans-serif;
+    font-size: 40px;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+#searchBtn {
+    width: 60px;
+    height: 60px;
+    font-size: 40px;
+    background-color: #fcbc02;
+    border: #013299 5px solid;
+    border-radius: 7px;
+}
+
+::placeholder {
+    font-family: sans-serif;
+    font-size: 40px;
+    line-height: 60px;
     text-align: center;
 }
