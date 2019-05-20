@@ -5,25 +5,14 @@ var anwbData;
 (function () {
   var socket = io();
   socket.on('anwbDataObject', function (data) {
-    // console.log(data);
     anwbData = data;
-    document.getElementById('anwbData').innerHTML = '';
   });
-  socket.on('kentekenData', function (data) {
-    console.log(data);
-  });
-
 })();
 
-
-function dataRender(data) {
-  var item = document.getElementById('anwbData')
-
-  data.map(x => {
-    item.innerHTML = "test";
-    item.insertAdjacentHTML("beforeend", x);
-  })
-}
+var socket = io();
+socket.on('kentekenData', function (data) {
+  console.log(data);
+});
 
 const form = document.getElementById('form')
 form.addEventListener('submit', function (e) {
@@ -31,6 +20,9 @@ form.addEventListener('submit', function (e) {
 
   var location = navigator.geolocation.getCurrentPosition(success, error);
   var kentekenData
+  var searchBtn = document.getElementById("searchBtn")
+  console.log(searchBtn);
+  document.getElementById('introText').className = 'displayNone';
 
   const searchValue = document.getElementById('searchValue');
   console.log(searchValue.value);
@@ -48,17 +40,18 @@ form.addEventListener('submit', function (e) {
 function success(pos) {
   var lat = pos.coords.latitude;
   var long = pos.coords.longitude;
-  var amountOfTrafficJams = anwbData.anwbData.trafficJams.length;
+  console.log(anwbData);
+  var amountOfTrafficJams = anwbData.anwbData.current.trafficJams.length;
   var y = "";
   var trafficJamDistances = []
   console.log(`lat = ${lat}, long = ${long}`);
 
   for (var y = 0; y < amountOfTrafficJams; y++) {
-    var specificLat = anwbData.anwbData.trafficJams[y].lat;
-    var specificLong = anwbData.anwbData.trafficJams[y].long;
+    var specificLat = anwbData.anwbData.current.trafficJams[y].lat;
+    var specificLong = anwbData.anwbData.current.trafficJams[y].long;
     trafficJamDistances.push({
       distanceOfYourPosition: getDistanceFromLatLonInKm(lat, long, specificLat, specificLong),
-      anwbData: anwbData.anwbData.trafficJams[y],
+      anwbData: anwbData.anwbData.current.trafficJams[y],
     })
   }
 
@@ -66,9 +59,25 @@ function success(pos) {
     return a.distanceOfYourPosition - b.distanceOfYourPosition;
   });
 
-  console.log(trafficJamDistances);
+  // console.log(trafficJamDistances);
   // getDistanceFromLatLonInKm(lat, long, 52.353761, 4.638322)
+  recentFileStatus(trafficJamDistances)
 }
+
+function recentFileStatus(data) {
+  var closestJam = data[0]
+  var secondClosestJam = data[1]
+  var thirthClosestJam = data[2]
+
+  // var estimatedPeople = ((closestJam.anwbData.distance / 1000) * 260)
+  // var estimatedCarsPerKm = 130;
+  // console.log(estimatedPeople);
+  console.log(closestJam);
+  console.log(secondClosestJam);
+  console.log(thirthClosestJam);
+
+}
+
 
 function error(err) {
   console.warn(`ERROR(${err.code}): ${err.message}`);

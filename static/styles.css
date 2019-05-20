@@ -42,7 +42,7 @@ fieldset {
 }
 
 #searchValue {
-    width: 300px;
+    width: 440px;
     height: 60px;
     background-color: #fcbc02;
     border: #013299 5px solid;
@@ -70,4 +70,22 @@ fieldset {
     font-size: 40px;
     line-height: 60px;
     text-align: center;
+}
+
+article {
+    max-width: 510px;
+    text-align: initial;
+    margin: 0 auto;
+    padding-bottom: 4rem;
+    color: darkslategray;
+}
+
+h1 {
+    font-size: 4em;
+    padding: 4rem;
+    color: cornflowerblue;
+}
+
+.displayNone {
+    display: none;
 }

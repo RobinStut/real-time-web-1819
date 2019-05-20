@@ -9,6 +9,10 @@ require("dotenv").config();
 const API_key = process.env.API_key;
 const fireBase_key = process.env.fireBase_key;
 const fireBase_id = process.env.fireBase_id;
+const firebase = require("firebase/app")
+require("firebase/auth");
+require("firebase/firestore");
+require("firebase/database");
 const port = process.env.PORT || 3000;
 const fs = require('fs');
 app.use(express.static(path.join(__dirname, "./static")));
@@ -19,12 +23,19 @@ app.use(bodyParser.urlencoded({
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// import util from 'util'
-// import fs from 'fs'
-// import path from 'path'
+const firebaseConfig = {
+  apiKey: "AIzaSyAEZsebt43wEgd9HZsHS3-c2apCpSbBMDk",
+  authDomain: "realtimeweb-robinstut.firebaseapp.com",
+  databaseURL: "https://realtimeweb-robinstut.firebaseio.com",
+  projectId: "realtimeweb-robinstut",
+  storageBucket: "realtimeweb-robinstut.appspot.com",
+  messagingSenderId: "136101887671",
+  appId: "1:136101887671:web:ab1904b4a9b3b33d"
+};
 
-// const readFile = util.promisify(fs.readFile)
-// const writeFile = util.promisify(fs.writeFile)
+firebase.initializeApp(firebaseConfig);
+
+
 
 const databasePath = path.join(__dirname, './kentekenAPIdata.json')
 
@@ -97,6 +108,7 @@ function filterANWB(data) {
       var y = "";
       for (var y = 0; y < lenghtOfTrafficJams; y++) {
         trafficJams.push({
+          jamId: data.roadEntries[i].events.trafficJams[y].msgNr,
           location: data.roadEntries[i].events.trafficJams[y].location,
           lat: data.roadEntries[i].events.trafficJams[y].fromLoc.lat,
           long: data.roadEntries[i].events.trafficJams[y].fromLoc.lon,
@@ -116,27 +128,10 @@ function filterANWB(data) {
 
 io.on("connection", async function (socket) {
   async function openRequest() {
-    // console.log('openRequest aangeroepen');
-    try {
-      let data = await dataANWB()
-        .then(data => filterANWB(data))
-      return (data);
-    } catch (error) {
-      console.log(error);
-    }
+    let data = await dataANWB()
+      .then(data => filterANWB(data))
+    return (data)
   }
-  // openRequest()
-
-  async function anwbAPICall() {
-    // console.log('anwbAPICall aangeroepen');
-    const resultOfANWBdataRequest = await openRequest();
-    // console.log(resultOfANWBdataRequest);
-    socket.emit('anwbDataObject', {
-      anwbData: resultOfANWBdataRequest
-    });
-  }
-  anwbAPICall();
-  // setInterval(anwbAPICall, 3000);
 
   app.get("/kenteken/:id", async function (req, res) {
     var searchValue = req.params.id.toUpperCase();
@@ -151,6 +146,7 @@ io.on("connection", async function (socket) {
           }
         });
         if (alreadyExist === true) {
+          console.log('if alreadyExist');
           var matchingResult = db.collection('kenteken');
           var allResultsInDb = [];
 
@@ -168,7 +164,7 @@ io.on("connection", async function (socket) {
             .then(async doc => {
               return doc.data()
             })
-
+          console.log(retreivedMatchingResult);
           // console.log(allResultsInDb);
           socket.emit('kentekenData', {
             specificData: retreivedMatchingResult,
@@ -200,6 +196,44 @@ io.on("connection", async function (socket) {
     }
 
   });
+
+  async function anwbAPICall() {
+    // console.log('anwbAPICall aangeroepen');
+    const resultOfANWBdataRequest = await openRequest();
+    // console.log(resultOfANWBdataRequest);
+    console.log('Current amount of traffic jams = ' + resultOfANWBdataRequest.trafficJams.length);
+
+    if (resultOfANWBdataRequest.trafficJams.length === 0) {
+      console.log('zonde zeg, wéér geen file');
+    }
+
+    if (resultOfANWBdataRequest.trafficJams.length > 0) {
+      const dbRefObject = firebase.database().ref().child('anwbData')
+
+      function writeUserData() {
+        console.log('writeUserData');
+        dbRefObject.set({
+          current: resultOfANWBdataRequest
+        });
+      }
+      writeUserData()
+
+      dbRefObject.on('value', snap => {
+        // console.log(snap.val())
+        console.log('time is change');
+        socket.emit('anwbDataObject', {
+          anwbData: snap.val()
+        });
+      });
+
+    }
+
+
+  }
+  anwbAPICall();
+  setInterval(anwbAPICall, 60000);
+
+
 
   // async function anwbAPICall() {
   //   const result = await openRequest();
