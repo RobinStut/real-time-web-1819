@@ -65,6 +65,22 @@ fieldset {
     border-radius: 7px;
 }
 
+#jamSubmit {
+    font-size: 40px;
+    color: white;
+    background-color: #248e50;
+    border: 5px solid #248e50;
+    box-shadow: inset 0px 0px 0px 3px white;
+    box-sizing: border-box;
+    border-radius: 15px;
+    max-width: 510px;
+    margin: .5rem auto;
+    display: flex;
+    justify-content: space-around;
+    min-width: 510px;
+    height: 75px;
+}
+
 ::placeholder {
     font-family: sans-serif;
     font-size: 40px;
@@ -88,4 +104,123 @@ h1 {
 
 .displayNone {
     display: none;
+}
+
+
+
+
+input[type=radio] {
+    display: none;
+}
+
+#allCurrentJams input[type=radio]:checked+label .specificJam {
+    background-color: #0066ff;
+    border: 5px solid #0066ff;
+}
+
+#allCurrentJams input[type=radio]:checked+label .specificJam .delay {
+    background-color: #fce607;
+    color: black;
+}
+
+#allCurrentJams input[type=radio]:checked+label .specificJam .distance {
+    background-color: #fe0000;
+    color: white;
+    border: 2px solid white;
+}
+
+.specificJam {
+    color: white;
+    background-color: lightgrey;
+    border: 5px solid lightgray;
+    box-shadow: inset 0px 0px 0px 3px white;
+    box-sizing: border-box;
+    border-radius: 15px;
+    max-width: 510px;
+    margin: .5rem auto;
+    display: flex;
+    justify-content: space-around;
+    min-height: 75px;
+    padding: .5rem;
+}
+
+.specificJam .name {
+    letter-spacing: 3px;
+    max-width: 50%;
+    text-align: left;
+}
+
+.specificJam .delay {
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.specificJam .distance {
+    padding: 10px;
+    border-radius: 3px;
+}
+
+.specificJam section {
+    align-self: center;
+}
+
+.allCurrentJams form {
+    padding-top: 2rem;
+}
+
+#personalCarDetails #jamForm {
+    display: grid;
+    grid-template-rows: auto auto auto;
+    grid-template-columns: 1fr 1fr;
+    max-width: 500px;
+    margin: 0 auto;
+    color: white;
+    background-color: #0066ff;
+    border: 5px solid #0066ff;
+    box-shadow: inset 0px 0px 0px 3px white;
+    box-sizing: border-box;
+    border-radius: 15px;
+    max-width: 510px;
+    margin: .5rem auto;
+    justify-content: space-around;
+    height: 150px;
+}
+
+.brand {
+    grid-row-start: 1;
+    grid-column-start: 1;
+    text-align: left;
+    padding-left: 1em;
+    align-self: center;
+}
+
+.type {
+    grid-row-start: 2;
+    grid-column-start: 1;
+    text-align: left;
+    padding-left: 1em;
+    align-self: center;
+}
+
+.seats {
+    grid-row-start: 3;
+    grid-column-start: 1;
+    text-align: left;
+    padding-left: 1em;
+    align-self: center;
+}
+
+.input {
+    grid-row-start: 1;
+    grid-row-end: 4;
+    grid-column-start: 2;
+    text-align: center;
+    font-size: 40px;
+    background-color: rgba(0, 0, 0, 0);
+    border: none;
+    color: white;
+}
+
+#personalCarDetails #jamForm .input:focus {
+    outline-color: #fcbc02;
 }

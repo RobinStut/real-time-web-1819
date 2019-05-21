@@ -97,157 +97,166 @@ function dataANWB() {
 }
 
 function filterANWB(data) {
+  console.log('filterANWB');
+  // console.log(data);
   var filteredANWBObjects = {}
   var trafficJams = []
-  var roadEntriesCount = "";
-
-  for (var i = 0; i < 9; i++) {
+  // console.log(data.roadEntries);
+  for (var i = 0; i < data.roadEntries.lenght; i++) {
 
     if (data.roadEntries[i].events.trafficJams.length > 0) {
+
       var lenghtOfTrafficJams = data.roadEntries[i].events.trafficJams.length
-      var y = "";
+
       for (var y = 0; y < lenghtOfTrafficJams; y++) {
+
+        var delay = data.roadEntries[i].events.trafficJams[y].delay;
+        var distance = data.roadEntries[i].events.trafficJams[y].distance;
+
+        if (delay === undefined) {
+          delay = 0
+        }
+        if (distance === undefined) {
+          delay = 0
+        }
+
         trafficJams.push({
           jamId: data.roadEntries[i].events.trafficJams[y].msgNr,
           location: data.roadEntries[i].events.trafficJams[y].location,
           lat: data.roadEntries[i].events.trafficJams[y].fromLoc.lat,
           long: data.roadEntries[i].events.trafficJams[y].fromLoc.lon,
-          delay: data.roadEntries[i].events.trafficJams[y].delay,
-          distance: data.roadEntries[i].events.trafficJams[y].distance
+          delay: delay,
+          distance: distance,
         })
       }
     }
-    roadEntriesCount = roadEntriesCount + i;
-  }
 
+  }
+  console.log('136');
+  console.log(filteredANWBObjects);
   filteredANWBObjects.date = data.dateTime
   filteredANWBObjects.trafficJams = trafficJams
-
   return filteredANWBObjects
 }
 
-io.on("connection", async function (socket) {
-  async function openRequest() {
-    let data = await dataANWB()
-      .then(data => filterANWB(data))
-    return (data)
+
+async function anwbAPICall() {
+
+  let data = await dataANWB()
+    .then(data => filterANWB(data))
+
+
+  if (data.trafficJams.length === 0) {
+    console.log('zonde zeg, wéér geen file');
   }
 
-  app.get("/kenteken/:id", async function (req, res) {
-    var searchValue = req.params.id.toUpperCase();
-    console.log("search value =", searchValue)
+  if (data.trafficJams.length > 0) {
+    const dbRefObject = firebase.database().ref().child('anwbData')
 
-    db.collection('kenteken').get()
-      .then(async (snapshot) => {
-        var alreadyExist = false;
-        snapshot.forEach((doc) => {
-          if (doc.id === searchValue) {
-            alreadyExist = true;
-          }
-        });
-        if (alreadyExist === true) {
-          console.log('if alreadyExist');
-          var matchingResult = db.collection('kenteken');
-          var allResultsInDb = [];
-
-          var allRetreivedResults = await matchingResult.get()
-            .then(snapshot => {
-              snapshot.forEach(doc => {
-                allResultsInDb.push({
-                  id: doc.id,
-                  data: doc.data()
-                }, )
-              });
-            })
-
-          var retreivedMatchingResult = await matchingResult.doc(searchValue).get()
-            .then(async doc => {
-              return doc.data()
-            })
-          console.log(retreivedMatchingResult);
-          // console.log(allResultsInDb);
-          socket.emit('kentekenData', {
-            specificData: retreivedMatchingResult,
-            allData: allResultsInDb
-          });
-        }
-        if (alreadyExist === false) {
-          try {
-            getData()
-          } catch (error) {
-            console.log(error);
-          }
-        }
-      })
-      .catch((err) => {
-        console.log('Error getting documents', err);
+    function writeUserData() {
+      console.log('writeUserData');
+      dbRefObject.set({
+        current: data
       });
-
-
-    async function getData() {
-      const data = await dataKenteken(searchValue)
-      addToDatabase(data)
-
     }
+    writeUserData()
 
-    function addToDatabase(data) {
-      var docRef = db.collection('kenteken').doc(data.kenteken);
-      var addKentekenDataToDatabase = docRef.set(data);
-    }
+    dbRefObject.on('value', snap => {
+      // console.log(snap.val())
+      console.log('time is change');
+      // socket.emit('anwbDataObject', {
+      //   anwbData: snap.val()
+      // });
+    });
+  }
+}
+anwbAPICall();
+setInterval(anwbAPICall, 60000);
 
-  });
 
-  async function anwbAPICall() {
-    // console.log('anwbAPICall aangeroepen');
-    const resultOfANWBdataRequest = await openRequest();
-    // console.log(resultOfANWBdataRequest);
-    console.log('Current amount of traffic jams = ' + resultOfANWBdataRequest.trafficJams.length);
+app.get("/kenteken/:id", async function (req, res) {
+  var searchValue = req.params.id.toUpperCase();
+  console.log("search value =", searchValue)
 
-    if (resultOfANWBdataRequest.trafficJams.length === 0) {
-      console.log('zonde zeg, wéér geen file');
-    }
+  db.collection('kenteken').get()
+    .then(async (snapshot) => {
+      var alreadyExist = false;
+      var retreivedMatchingResult;
+      snapshot.forEach((doc) => {
+        if (doc.id === searchValue) {
+          alreadyExist = true;
+        }
+      });
+      if (alreadyExist === true) {
+        console.log('if alreadyExist');
+        var matchingResult = db.collection('kenteken');
+        var allResultsInDb = [];
 
-    if (resultOfANWBdataRequest.trafficJams.length > 0) {
-      const dbRefObject = firebase.database().ref().child('anwbData')
+        var allRetreivedResults = await matchingResult.get()
+          .then(snapshot => {
+            snapshot.forEach(doc => {
+              allResultsInDb.push({
+                id: doc.id,
+                data: doc.data()
+              }, )
+            });
+          })
 
-      function writeUserData() {
-        console.log('writeUserData');
-        dbRefObject.set({
-          current: resultOfANWBdataRequest
-        });
+        retreivedMatchingResult = await matchingResult.doc(searchValue).get()
+          .then(async doc => {
+            return doc.data()
+          })
+        console.log('171');
+        console.log(retreivedMatchingResult);
+        // kentekenEmit(retreivedMatchingResult)
+
       }
-      writeUserData()
+      if (alreadyExist === false) {
+        try {
+          console.log('Does not exist yet');
+          console.log(dataKenteken(searchValue));
+          addToDatabase(dataKenteken(searchValue))
+          console.log('done with adding');
+          // console.log(retreivedMatchingResult);
 
-      dbRefObject.on('value', snap => {
-        // console.log(snap.val())
-        console.log('time is change');
-        socket.emit('anwbDataObject', {
-          anwbData: snap.val()
-        });
-      });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    })
+    .catch((err) => {
+      console.log('Error getting documents', err);
+    });
 
-    }
-
-
+  function addToDatabase(data) {
+    var docRef = db.collection('kenteken').doc(data.kenteken);
+    var addKentekenDataToDatabase = docRef.set(data);
   }
-  anwbAPICall();
-  setInterval(anwbAPICall, 60000);
+
+});
 
 
 
-  // async function anwbAPICall() {
-  //   const result = await openRequest();
+io.on("connection", async function (socket) {
 
-  //   socket.emit('eventHere', {
-  //     anwb: result
-  //   });
-  // }
-  // anwbAPICall();
-  // setInterval(anwbAPICall, 180000);
 
-  socket.on("disconnect", function () {
-    console.log("user disconnected");
-  });
+
+  function kentekenEmit(data) {
+    console.log('kentekenEmit');
+    // console.log(data);
+    var kentekenObj = {
+      merk: data.merk,
+      type: data.handelsbenaming,
+      stoelen: data.aantal_zitplaatsen
+    }
+    console.log(kentekenObj);
+
+    socket.emit('kentekenData', {
+      kentekenData: kentekenObj
+    });
+
+    console.log('endOfEmit');
+  }
 });
 
 server.listen(port, function () {

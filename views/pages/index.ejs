@@ -25,9 +25,44 @@
     </fieldset>
   </form>
 
-  <section id="feedbackField">
+  <div id="informationWrapper">
+    <section id="allCurrentJams" class="displayNone">
+      <!-- <section id="allCurrentJams"> -->
+      <form action="" id="jamForm">
+        <section id="formItems">
+          <input type="radio" id="1" name="file" required>
+          <label for="1">
+            <div class="specificJam">
+              <section class="name">Zutphen</section>
+              <section class="delay">5 min</section>
+              <section class="distance">8 km</section>
+            </div>
+          </label>
+          <input type="radio" id="2" name="file">
+          <label for="2">
+            <div class="specificJam">
+              <section class="name">Zutphen</section>
+              <section class="delay">5 min</section>
+              <section class="distance">8 km</section>
+            </div>
+          </label>
+        </section>
+        <button id="jamSubmit" type="submit">Keus bevestigen</button>
+      </form>
+    </section>
 
-  </section>
+    <section id="personalCarDetails" class="displayNone">
+      <form action="" id="jamForm">
+        <h3 class="brand">Merk: <span id="carBrand"></span></h3>
+        <h3 class="type">type: <span id="carType"></span></h3>
+        <h3 class="seats">Zitplaatsen: <span id="carSeats"></span></h3>
+        <input class="input" type="number" name="quantity" min="1" max="100" value="8" autofocus>
+        <!-- <button class="submit" id="jamSubmit" type="submit">Plaatsen bevestigen</button> -->
+      </form>
+
+    </section>
+
+  </div>
 
   <% include ../partials/footer %>
 </body>
