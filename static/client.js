@@ -7,6 +7,7 @@ function socket() {
   var socket = io();
   socket.on('anwbDataObject', function (data) {
     console.log('anwbDataObjectSocket');
+    console.log(data);
     anwbData = data;
   });
   socket.on('kentekenData', function (data) {
@@ -39,7 +40,7 @@ form.addEventListener('submit', function (e) {
 function success(pos) {
   var lat = pos.coords.latitude;
   var long = pos.coords.longitude;
-  // console.log(anwbData);
+  console.log(anwbData);
   var amountOfTrafficJams = anwbData.anwbData.current.trafficJams.length;
   var y = "";
   var trafficJamDistances = []
