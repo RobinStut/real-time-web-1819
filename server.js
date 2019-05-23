@@ -64,6 +64,18 @@ admin.initializeApp({
 
 var db = admin.firestore();
 
+function dataANWB() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const result = await fetch('https://www.anwb.nl/feeds/gethf')
+      let data = await result.json()
+      resolve(data)
+    } catch (error) {
+      reject(error);
+    }
+  })
+}
+
 function dataKenteken(searchValue) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -75,20 +87,6 @@ function dataKenteken(searchValue) {
       })
       let data = await result.json()
       console.log(data);
-
-      resolve(data)
-
-    } catch (error) {
-      reject(error);
-    }
-  })
-}
-
-function dataANWB() {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const result = await fetch('https://www.anwb.nl/feeds/gethf')
-      let data = await result.json()
       resolve(data)
     } catch (error) {
       reject(error);
@@ -115,15 +113,15 @@ function filterANWB(data) {
       for (var y = 0; y < lenghtOfTrafficJams; y++) {
         // console.log(y);
         // console.log('115');
-        // console.log(data.roadEntries[i].events.trafficJams);
+        console.log(data.roadEntries[i].events.trafficJams.length);
         var delay = data.roadEntries[i].events.trafficJams[y].delay;
         var distance = data.roadEntries[i].events.trafficJams[y].distance;
 
         if (delay === undefined) {
-          delay = 0
+          delay = 0;
         }
         if (distance === undefined) {
-          delay = 0
+          distance = 0;
         }
 
         trafficJams.push({
@@ -142,7 +140,7 @@ function filterANWB(data) {
   // console.log(filteredANWBObjects);
   filteredANWBObjects.date = data.dateTime
   filteredANWBObjects.trafficJams = trafficJams
-  // console.log('endOfFilterANWB');
+  console.log('endOfFilterANWB');
   // console.log(filteredANWBObjects);
   return filteredANWBObjects
 }
@@ -153,20 +151,20 @@ function filterKenteken(data) {
   var filteredKentekenObjects = {
     merk: data.merk,
     type: data.handelsbenaming,
-    plek: data.aantal_zitplaatsen
+    plek: data.aantal_zitplaatsen,
+    kent: data.kenteken
   }
   console.log(filteredKentekenObjects);
   console.log('filterKentekenEind');
   return filteredKentekenObjects
 }
-
 async function anwbAPICall() {
 
   let data = await dataANWB()
     .then(data => filterANWB(data))
 
-  // console.log('datalog = ');
-  // console.log(data);
+  console.log('datalog = ')
+  console.log(data);
 
   if (data.trafficJams.length === 0) {
     console.log('zonde zeg, wéér geen file');
@@ -176,18 +174,30 @@ async function anwbAPICall() {
     });
     console.log('checkInDb');
     console.log(checkInDb);
+    return checkInDb
   }
 
   if (data.trafficJams.length > 0) {
+    console.log('trafficJams > ');
     const dbRefObject = firebase.database().ref().child('anwbData')
+
+    console.log(data);
 
     function writeUserData() {
       // console.log('writeUserData');
-      dbRefObject.set({
-        current: data
-      });
+      try {
+        console.log('UPDATE');
+        dbRefObject.update({
+          data
+        });
+      } catch (error) {
+        console.log(error);
+      }
+
     }
+    console.log('195');
     writeUserData()
+    console.log('196');
 
     var checkInDb = await firebase.database().ref().child('anwbData').once('value').then(function (snapshot) {
       // console.log(snapshot.val());
@@ -195,23 +205,37 @@ async function anwbAPICall() {
     });
 
     return checkInDb
-
-    // dbRefObject.on('value', snap => {
-    // console.log(snap.val())
-    // console.log('time is change');
-    // socket.emit('anwbDataObject', {
-    //   anwbData: snap.val()
-    // });
-    // });
   }
 }
+anwbAPICall()
 setInterval(anwbAPICall, 60000);
+
+
+app.get("/carSeatSpots/:jamId/:carInput/:kent", async function (req, res) {
+  console.log('carSeatSpots');
+  var currentJamId = req.params.jamId
+  var carInput = req.params.carInput
+  var kent = req.params.kent
+
+  function writeData() {
+    const dbRefObject = firebase.database().ref().child(`/updatedData/${currentJamId}/${kent}/`)
+    dbRefObject.set({
+      newSeats: carInput
+    });
+  }
+  writeData()
+
+  //Log object to console again.
+  // console.log("After update: ", allJams[objIndex])
+
+});
 
 app.get("/kenteken/:id", async function kentekenAPICall(req, res) {
   var searchValue = req.params.id.toUpperCase();
   console.log("search value =", searchValue)
+  var data;
 
-  var checkInDb = await firebase.database().ref().child(searchValue).once('value').then(function (snapshot) {
+  var checkInDb = await firebase.database().ref().child(`/kentekens/${searchValue}/`).once('value').then(function (snapshot) {
     return snapshot.val()
   });
 
@@ -221,34 +245,54 @@ app.get("/kenteken/:id", async function kentekenAPICall(req, res) {
   if (checkInDb === null) {
     console.log('if=0');
     var rawData = await dataKenteken(searchValue);
-    var data = await filterKenteken(rawData)
+    data = await filterKenteken(rawData)
+
 
     function writeData() {
-      const dbRefObject = firebase.database().ref().child(searchValue)
+      const dbRefObject = firebase.database().ref().child(`/kentekens/${searchValue}/`)
       dbRefObject.set(data);
     }
     writeData()
-    emitter.emit('newData', data);
+    // emitter.emit('newData', data);
+  } else {
+    data = checkInDb
   }
+  res.json({
+    data
+  })
 });
 
 io.on("connection", async function (socket) {
   console.log('onConnect');
 
-  emitter.on('newData', (data) => {
-    console.log('239');
-    console.log(data);
-    // socket.emit('newDataGathered', )
-  })
-
-
-
   var anwbData = await anwbAPICall();
-  console.log(anwbData);
 
   socket.emit('anwbDataObject', {
     anwbData
   });
+
+  const updateAnwbData = firebase.database().ref().child('anwbData')
+
+  updateAnwbData.on('value', snap => {
+    console.log('updateAnwbData on');
+    console.log(snap.val())
+    socket.emit('updateAnwbData',
+      snap.val()
+    );
+  });
+
+
+  const updateChangedData = firebase.database().ref().child('updatedData')
+
+  updateChangedData.on('value', snap => {
+    console.log('updateChangedData on');
+    console.log(snap.val())
+
+    socket.emit('updateChangedData',
+      snap.val()
+    );
+  });
+
 
 
   function kentekenEmit(data) {

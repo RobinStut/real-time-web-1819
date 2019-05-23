@@ -28,26 +28,35 @@
   <div id="informationWrapper">
     <section id="allCurrentJams" class="displayNone">
       <!-- <section id="allCurrentJams"> -->
-      <form action="" id="jamForm">
+      <form id="jamForm">
         <section id="formItems">
 
         </section>
-        <button id="jamSubmit" type="submit">Keus bevestigen</button>
+        <!-- <button id="jamSubmit" type="submit">Keus bevestigen</button> -->
+        <button id="jamSubmit">Keus bevestigen</button>
+
+
       </form>
     </section>
 
     <section id="personalCarDetails" class="displayNone">
+      <svg width="400" height="400">
+        <g transform="translate(200, 200)"></g>
+      </svg>
       <form action="" id="jamForm">
         <h3 class="brand">Merk: <span id="carBrand"></span></h3>
         <h3 class="type">type: <span id="carType"></span></h3>
         <h3 class="seats">Zitplaatsen: <span id="carSeats"></span></h3>
-        <input class="input" type="number" name="quantity" min="1" max="100" value="8" autofocus>
+        <input class="input" id="carInput" type="number" name="quantity" min="1" max="100" value="8" autofocus>
         <!-- <button class="submit" id="jamSubmit" type="submit">Plaatsen bevestigen</button> -->
       </form>
 
     </section>
 
   </div>
+
+
+
 
   <% include ../partials/footer %>
 </body>

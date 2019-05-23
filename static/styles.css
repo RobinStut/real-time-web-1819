@@ -224,3 +224,16 @@ input[type=radio] {
 #personalCarDetails #jamForm .input:focus {
     outline-color: #fcbc02;
 }
+
+svg .arc {
+    stroke: #fff;
+    stroke-width: 1px;
+}
+
+text {
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: normal;
+    fill: white;
+    text-anchor: middle;
+}
