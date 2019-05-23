@@ -1,0 +1,77 @@
+{
+    "aantal_cilinders": 8,
+    "typegoedkeuringsnummer": "e11*KS07/46*0245*00",
+    "datum_eerste_toelating": "2011-07-20",
+    "datum_eerste_afgifte_nederland": "2017-05-23",
+    "eerste_kleur": "ZWART",
+    "volgnummer_wijziging_eu_typegoedkeuring": 0,
+    "type": "AERO 8",
+    "europese_voertuigcategorie": "M1",
+    "export_indicator": false,
+    "wam_verzekerd": true,
+    "cilinderinhoud": 4799,
+    "kenteken": "PB340B",
+    "variant": "A11",
+    "zuinigheidslabel": "G",
+    "vervaldatum_apk": "2019-10-25",
+    "toegestane_maximum_massa_voertuig": 1355,
+    "brandstof": [{
+        "brandstof_volgnummer": 1,
+        "emissiecode_omschrijving": "Euro 5",
+        "nettomaximumvermogen": 270,
+        "brandstofverbruik_gecombineerd": 11,
+        "geluidsniveau_stationair": 86,
+        "brandstofverbruik_stad": 16.4,
+        "brandstof_omschrijving": "Benzine",
+        "co2_uitstoot_gecombineerd": 256,
+        "geluidsniveau_rijdend": 71,
+        "brandstofverbruik_buiten_de_stad": 7.9,
+        "toerental_geluidsniveau": 4725
+    }],
+    "merk": "MORGAN",
+    "kentekenplaat": "PB-340-B",
+    "carrosserie": [{
+        "carrosserie_volgnummer": 1,
+        "carrosserietype": "AE",
+        "type_carrosserie_europese_omschrijving": "Cabriolet"
+    }],
+    "uitvoering": "A19",
+    "taxi_indicator": false,
+    "openstaande_terugroepactie_indicator": false,
+    "aantal_zitplaatsen": 2,
+    "bruto_bpm": 36362,
+    "lengte": 415,
+    "technische_max_massa_voertuig": 1355,
+    "voertuigsoort": "Personenauto",
+    "catalogusprijs": 198406,
+    "handelsbenaming": "AERO SUPER SPORT",
+    "as": [{
+        "wettelijk_toegestane_maximum_aslast": 650,
+        "plaatscode_as": "V",
+        "aantal_assen": 2,
+        "as_nummer": 1,
+        "spoorbreedte": 151
+    }, {
+        "wettelijk_toegestane_maximum_aslast": 750,
+        "plaatscode_as": "A",
+        "aantal_assen": 2,
+        "as_nummer": 2,
+        "spoorbreedte": 148
+    }],
+    "massa_rijklaar": 1220,
+    "plaats_chassisnummer": "r. motorruimte",
+    "vermogen_massarijklaar": 0.22,
+    "inrichting": "cabriolet",
+    "aantal_wielen": 4,
+    "datum_tenaamstelling": "2017-05-23",
+    "massa_ledig_voertuig": 1120,
+    "maximum_ondersteunende_snelheid": 0,
+    "wielbasis": 253,
+    "sidecode": 9,
+    "aantal_deuren": 2,
+    "_links": {
+        "self": {
+            "href": "/voertuiggegevens/pb340b"
+        }
+    }
+}

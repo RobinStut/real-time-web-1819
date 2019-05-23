@@ -2,6 +2,8 @@ console.log("working on it");
 
 var anwbData;
 var kentekenData;
+var updatedData;
+var clickedJamId;
 
 function socket() {
   var socket = io();
@@ -12,8 +14,9 @@ function socket() {
   });
   socket.on('updateChangedData', function (data) {
     console.log('updatedDataObjectSocket');
-    console.log(data);
-    // anwbData = data;
+    // console.log(data);
+    updatedData = data;
+    writeD3(clickedJamId)
   });
 
 }
@@ -79,7 +82,7 @@ const jamSubmit = document.getElementById('jamForm')
 jamSubmit.addEventListener('submit', function (e) {
   e.preventDefault()
   // console.log(e);
-  var clickedJamId;
+
   for (var i = 0; i < e.target.length; i++) {
     if (e.target[i].checked) {
       clickedJamId = e.target[i].id;
@@ -94,7 +97,11 @@ jamSubmit.addEventListener('submit', function (e) {
   document.getElementById('carSeats').innerText = kentekenData.data.plek;
   let carInput = document.getElementById('carInput')
   const kent = kentekenData.data.kent;
+  console.log(carInput);
   carInput.value = kentekenData.data.plek;
+
+
+  writeD3(clickedJamId)
 
   carInput.addEventListener('change', async (event) => {
     console.log(carInput.value);
@@ -137,130 +144,176 @@ function deg2rad(deg) {
   return deg * (Math.PI / 180)
 }
 
-console.log(anwbData);
+// console.log(anwbData);
 
-var channels = [{
-    name: anwbData,
-    quantity: 80
-  },
-  {
-    name: "BBB",
-    quantity: 50
-  },
 
-];
 
-var maxValue = d3.max(channels, function (d) {
-  return d.quantity;
-});
-var minValue = d3.min(channels, function (d) {
-  return d.quantity;
-});
-var totalValue = d3.sum(channels, function (d) {
-  return d.quantity;
-});
 
-var color = d3.scaleLinear()
-  .domain([maxValue, minValue])
-  .range([d3.rgb("#1C3448"), d3.rgb("#90b4d2")]);
 
-var canvas = d3.select("svg");
-var group = d3.select("g");
+function writeD3(chosenJam) {
 
-var r = 150;
 
-var arc = d3.arc()
-  .outerRadius(r - r * .05)
-  .innerRadius(0)
-  .cornerRadius(2);
 
-var arc2 = d3.arc()
-  .outerRadius(r + r * .05)
-  .innerRadius(0)
-  .cornerRadius(2);
+  var currentJamStatus = anwbData.anwbData.data.trafficJams;
 
-var pieGenerator = d3.pie()
-  .value(function (d) {
+  function findJamArray(id) {
+    return id.jamId === chosenJam;
+  }
+  var currentJamArray = currentJamStatus.find(findJamArray)
+
+  console.log(currentJamArray);
+  const exactJamId = String(currentJamArray.jamId)
+  console.log(exactJamId);
+  console.log(chosenJam);
+  // console.log(updatedData);
+
+
+  var fakeArray = Object.keys(updatedData);
+  console.log(fakeArray);
+
+
+  var fakeIndex = fakeArray.indexOf(exactJamId)
+
+  console.log(updatedData);
+  var nestedValue1 = Object.values(updatedData);
+  console.log(fakeIndex)
+
+  var nestedValue2 = Object.values(nestedValue1)
+  var nestedValue2Array = nestedValue2[fakeIndex];
+
+  var nestedValue3 = Object.values(nestedValue2Array)
+  console.log('length= ' + nestedValue3.length);
+  var channels = [{
+    name: currentJamArray.location,
+    quantity: currentJamArray.distance,
+  }, ];
+
+  for (var y = 0; y < nestedValue3.length; y++) {
+    console.log(nestedValue3[y]);
+    channels.push(nestedValue3[y])
+  }
+
+  // console.log(nestedValue2[fakeIndex][1]);
+
+
+
+
+
+
+  var maxValue = d3.max(channels, function (d) {
     return d.quantity;
-  })
-  .sort(function (a, b) {
-    return a.name.localeCompare(b.name);
+  });
+  var minValue = d3.min(channels, function (d) {
+    return d.quantity;
+  });
+  var totalValue = d3.sum(channels, function (d) {
+    return d.quantity;
   });
 
-var arcData = pieGenerator(channels);
+  var color = d3.scaleLinear()
+    .domain([maxValue, minValue])
+    .range([d3.rgb("#1C3448"), d3.rgb("#90b4d2")]);
 
-var arcs = group.selectAll(".arc")
-  .data(arcData)
-  .enter()
-  .append("g")
-  .attr("class", "arc");
+  var canvas = d3.select("svg");
+  var group = d3.select("g");
 
-var arcGeneration = arcs.append("path")
-  .attr("d", arc)
-  .attr("fill", function (d) {
-    return color(d.value);
-  })
+  var r = 150;
 
-var textGeneration = d3.selectAll("g")
-  .selectAll(".arc")
-  .data(arcData)
-  .append('text')
-  .each(function (d) {
-    var centroid = arc.centroid(d);
-    d3.select(this)
-      .attr("class", d.data.name)
-      .attr('x', centroid[0])
-      .attr('y', centroid[1])
-      .attr('dy', '-.5em')
-      .text(d.data.name);
-  });
+  var arc = d3.arc()
+    .outerRadius(r - r * .05)
+    .innerRadius(0)
+    .cornerRadius(2);
 
-var percentGeneration = d3.selectAll("g")
-  .selectAll(".arc")
-  .data(arcData)
-  .append('text')
-  .each(function (d) {
-    var centroid = arc.centroid(d);
-    d3.select(this)
-      .attr("class", d.data.name)
-      .attr('x', centroid[0])
-      .attr('y', centroid[1])
-      .attr('dy', '1em')
-      .text(Math.round(d.data.quantity * 100 / totalValue) + "%");
-  });
+  var arc2 = d3.arc()
+    .outerRadius(r + r * .05)
+    .innerRadius(0)
+    .cornerRadius(2);
 
-arcGeneration.on("mouseover", function (d) {
-  var centroid = arc2.centroid(d);
-  var className = d.data.name;
-  var translateName = d3.selectAll('.' + className)
-    .transition()
-    .duration(200)
-    .attr('x', centroid[0])
-    .attr('y', centroid[1]);
-  var translateArc = d3.select(this)
-    .transition()
-    .duration(200)
-    .attr("d", arc2)
-  //console.log("inside this "+d.data.name + d.value);
+  var pieGenerator = d3.pie()
+    .value(function (d) {
+      return d.quantity;
+    })
+    .sort(function (a, b) {
+      return a.name.localeCompare(b.name);
+    });
 
-});
+  var arcData = pieGenerator(channels);
 
-arcGeneration.on("mouseout", function (d, i) {
-  var centroid = arc.centroid(d);
-  var className = d.data.name;
-  var translateName = d3.selectAll('.' + className)
-    .transition()
-    .duration(200)
-    .attr('x', centroid[0])
-    .attr('y', centroid[1]);
-  d3.select(this)
-    .transition()
-    .duration(200)
+  var arcs = group.selectAll(".arc")
+    .data(arcData)
+    .enter()
+    .append("g")
+    .attr("class", "arc");
+
+  var arcGeneration = arcs.append("path")
     .attr("d", arc)
+    .attr("fill", function (d) {
+      return color(d.value);
+    })
 
-});
+  var textGeneration = d3.selectAll("g")
+    .selectAll(".arc")
+    .data(arcData)
+    .append('text')
+    .each(function (d) {
+      var centroid = arc.centroid(d);
+      d3.select(this)
+        .attr("class", d.data.name)
+        .attr('x', centroid[0])
+        .attr('y', centroid[1])
+        .attr('dy', '-.5em')
+        .text(d.data.name);
+    });
+
+  var percentGeneration = d3.selectAll("g")
+    .selectAll(".arc")
+    .data(arcData)
+    .append('text')
+    .each(function (d) {
+      var centroid = arc.centroid(d);
+      d3.select(this)
+        .attr("class", d.data.name)
+        .attr('x', centroid[0])
+        .attr('y', centroid[1])
+        .attr('dy', '1em')
+        .text(Math.round(d.data.quantity * 100 / totalValue) + "%");
+    });
+
+  arcGeneration.on("mouseover", function (d) {
+    var centroid = arc2.centroid(d);
+    var className = d.data.name;
+    var translateName = d3.selectAll('.' + className)
+      .transition()
+      .duration(200)
+      .attr('x', centroid[0])
+      .attr('y', centroid[1]);
+    var translateArc = d3.select(this)
+      .transition()
+      .duration(200)
+      .attr("d", arc2)
+    //console.log("inside this "+d.data.name + d.value);
+
+  });
+
+  arcGeneration.on("mouseout", function (d, i) {
+    var centroid = arc.centroid(d);
+    var className = d.data.name;
+    var translateName = d3.selectAll('.' + className)
+      .transition()
+      .duration(200)
+      .attr('x', centroid[0])
+      .attr('y', centroid[1]);
+    d3.select(this)
+      .transition()
+      .duration(200)
+      .attr("d", arc)
+
+  });
 
 
-/*ideas
-asignar un id dinamico al elemento de texto de nombre y valor en cada fraccion que sea igual al valor, en el evento mouseover modificar la posicion X y Y del elemento texto que sea que tenga el id igual al valor que este en turno. :)))))))
-*/
+
+  /*ideas
+  asignar un id dinamico al elemento de texto de nombre y valor en cada fraccion que sea igual al valor, en el evento mouseover modificar la posicion X y Y del elemento texto que sea que tenga el id igual al valor que este en turno. :)))))))
+  */
+
+}

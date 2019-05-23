@@ -23,7 +23,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-const emitter = new EventEmitter()
+// const emitter = new EventEmitter()
 
 const firebaseConfig = {
   apiKey: "AIzaSyAEZsebt43wEgd9HZsHS3-c2apCpSbBMDk",
@@ -125,7 +125,7 @@ function filterANWB(data) {
         }
 
         trafficJams.push({
-          jamId: data.roadEntries[i].events.trafficJams[y].msgNr,
+          jamId: `${data.roadEntries[i].events.trafficJams[y].start+data.roadEntries[i].events.trafficJams[y].location}`,
           location: data.roadEntries[i].events.trafficJams[y].location,
           lat: data.roadEntries[i].events.trafficJams[y].fromLoc.lat,
           long: data.roadEntries[i].events.trafficJams[y].fromLoc.lon,
@@ -163,8 +163,8 @@ async function anwbAPICall() {
   let data = await dataANWB()
     .then(data => filterANWB(data))
 
-  console.log('datalog = ')
-  console.log(data);
+  // console.log('datalog = ')
+  // console.log(data);
 
   if (data.trafficJams.length === 0) {
     console.log('zonde zeg, wéér geen file');
@@ -181,7 +181,7 @@ async function anwbAPICall() {
     console.log('trafficJams > ');
     const dbRefObject = firebase.database().ref().child('anwbData')
 
-    console.log(data);
+    // console.log(data);
 
     function writeUserData() {
       // console.log('writeUserData');
@@ -208,7 +208,7 @@ async function anwbAPICall() {
   }
 }
 anwbAPICall()
-setInterval(anwbAPICall, 60000);
+setInterval(anwbAPICall, 180000);
 
 
 app.get("/carSeatSpots/:jamId/:carInput/:kent", async function (req, res) {
@@ -220,7 +220,8 @@ app.get("/carSeatSpots/:jamId/:carInput/:kent", async function (req, res) {
   function writeData() {
     const dbRefObject = firebase.database().ref().child(`/updatedData/${currentJamId}/${kent}/`)
     dbRefObject.set({
-      newSeats: carInput
+      name: kent,
+      quantity: carInput
     });
   }
   writeData()
@@ -275,7 +276,7 @@ io.on("connection", async function (socket) {
 
   updateAnwbData.on('value', snap => {
     console.log('updateAnwbData on');
-    console.log(snap.val())
+    // console.log(snap.val())
     socket.emit('updateAnwbData',
       snap.val()
     );
