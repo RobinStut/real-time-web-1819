@@ -86,7 +86,6 @@ function dataKenteken(searchValue) {
         },
       })
       let data = await result.json()
-      console.log(data);
       resolve(data)
     } catch (error) {
       reject(error);
@@ -95,25 +94,19 @@ function dataKenteken(searchValue) {
 }
 
 function filterANWB(data) {
-  console.log('filterANWB');
-  // console.log(data);
+
   var filteredANWBObjects = {}
   var trafficJams = []
   var roadEntriesLength = data.roadEntries.length
-  console.log('roadEntries length = ' + data.roadEntries.length);
   for (var i = 0; i < roadEntriesLength; i++) {
-    // console.log('first for');
-    // console.log(i);
+
 
     if (data.roadEntries[i].events.trafficJams.length > 0) {
 
       var lenghtOfTrafficJams = data.roadEntries[i].events.trafficJams.length
-      // console.log('length of trafic jams = ' + lenghtOfTrafficJams);
 
       for (var y = 0; y < lenghtOfTrafficJams; y++) {
-        // console.log(y);
-        // console.log('115');
-        console.log(data.roadEntries[i].events.trafficJams.length);
+
         var delay = data.roadEntries[i].events.trafficJams[y].delay;
         var distance = data.roadEntries[i].events.trafficJams[y].distance;
 
@@ -126,10 +119,7 @@ function filterANWB(data) {
         var rx1 = /./g;
 
         const newId = String(`${data.roadEntries[i].events.trafficJams[y].start + data.roadEntries[i].events.trafficJams[y].location}`).replace(rx1, (...x) => `${x[0]}`)
-        console.log(newId);
 
-        console.log(128);
-        // console.log(data.roadEntries[i].events.trafficJams[y].start + data.roadEntries[i].events.trafficJams[y].location.replace(regex, ''));
 
 
 
@@ -145,26 +135,18 @@ function filterANWB(data) {
     }
 
   }
-  // console.log('136');
-  // console.log(filteredANWBObjects);
   filteredANWBObjects.date = data.dateTime
   filteredANWBObjects.trafficJams = trafficJams
-  console.log('endOfFilterANWB');
-  // console.log(filteredANWBObjects);
   return filteredANWBObjects
 }
 
 function filterKenteken(data) {
-  console.log('filterKentekenBegin');
-  // console.log(data);
   var filteredKentekenObjects = {
     merk: data.merk,
     type: data.handelsbenaming,
     plek: data.aantal_zitplaatsen,
     kent: data.kenteken
   }
-  console.log(filteredKentekenObjects);
-  console.log('filterKentekenEind');
   return filteredKentekenObjects
 }
 async function anwbAPICall() {
@@ -172,30 +154,21 @@ async function anwbAPICall() {
   let data = await dataANWB()
     .then(data => filterANWB(data))
 
-  // console.log('datalog = ')
-  // console.log(data);
 
   if (data.trafficJams.length === 0) {
     console.log('zonde zeg, wéér geen file');
     var checkInDb = await firebase.database().ref().child('fakeAnwbData').once('value').then(function (snapshot) {
-      console.log(snapshot.val());
       return snapshot.val()
     });
-    console.log('checkInDb');
-    console.log(checkInDb);
     return checkInDb
   }
 
   if (data.trafficJams.length > 0) {
-    console.log('trafficJams > ');
     const dbRefObject = firebase.database().ref().child('anwbData')
 
-    // console.log(data);
 
     function writeUserData() {
-      // console.log('writeUserData');
       try {
-        console.log('UPDATE');
         dbRefObject.update({
           data
         });
@@ -204,12 +177,9 @@ async function anwbAPICall() {
       }
 
     }
-    console.log('195');
     writeUserData()
-    console.log('196');
 
     var checkInDb = await firebase.database().ref().child('anwbData').once('value').then(function (snapshot) {
-      // console.log(snapshot.val());
       return snapshot.val()
     });
 
@@ -221,7 +191,6 @@ setInterval(anwbAPICall, 180000);
 
 
 app.get("/carSeatSpots/:jamId/:carInput/:kent", async function (req, res) {
-  console.log('carSeatSpots');
   var currentJamId = req.params.jamId
   var carInput = req.params.carInput
   var kent = req.params.kent
@@ -235,25 +204,19 @@ app.get("/carSeatSpots/:jamId/:carInput/:kent", async function (req, res) {
   }
   writeData()
 
-  //Log object to console again.
-  // console.log("After update: ", allJams[objIndex])
 
 });
 
 app.get("/kenteken/:id", async function kentekenAPICall(req, res) {
   var searchValue = req.params.id.toUpperCase();
-  console.log("search value =", searchValue)
   var data;
 
   var checkInDb = await firebase.database().ref().child(`/kentekens/${searchValue}/`).once('value').then(function (snapshot) {
     return snapshot.val()
   });
 
-  console.log('checkInDb');
-  console.log(checkInDb);
 
   if (checkInDb === null) {
-    console.log('if=0');
     var rawData = await dataKenteken(searchValue);
     data = await filterKenteken(rawData)
 
@@ -273,7 +236,6 @@ app.get("/kenteken/:id", async function kentekenAPICall(req, res) {
 });
 
 io.on("connection", async function (socket) {
-  console.log('onConnect');
 
   var anwbData = await anwbAPICall();
 
@@ -284,8 +246,6 @@ io.on("connection", async function (socket) {
   const updateAnwbData = firebase.database().ref().child('anwbData')
 
   updateAnwbData.on('value', snap => {
-    console.log('updateAnwbData on');
-    // console.log(snap.val())
     socket.emit('updateAnwbData',
       snap.val()
     );
@@ -295,8 +255,6 @@ io.on("connection", async function (socket) {
   const updateChangedData = firebase.database().ref().child('updatedData')
 
   updateChangedData.on('value', snap => {
-    console.log('updateChangedData on');
-    console.log(snap.val())
 
     socket.emit('updateChangedData',
       snap.val()
@@ -306,20 +264,16 @@ io.on("connection", async function (socket) {
 
 
   function kentekenEmit(data) {
-    console.log('kentekenEmit');
-    // console.log(data);
     var kentekenObj = {
       merk: data.merk,
       type: data.handelsbenaming,
       stoelen: data.aantal_zitplaatsen
     }
-    console.log(kentekenObj);
 
     socket.emit('kentekenData', {
       kentekenData: kentekenObj
     });
 
-    console.log('endOfEmit');
   }
 });
 
