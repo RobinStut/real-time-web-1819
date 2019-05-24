@@ -8,7 +8,7 @@ Het idee is om ANWB data op te halen vanaf de [ANWB API bron](https://anwb.nl/fe
 
 Schets met interactie:
 
-![schets](Schets.jpg)
+![schets](schets.jpg)
 
 * Punt 1:
 In het invulveld wil ik de gebruiker een Nederlands kenteken laten invullen, om deze data op te gaan halen. 
