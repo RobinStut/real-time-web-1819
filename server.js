@@ -123,9 +123,18 @@ function filterANWB(data) {
         if (distance === undefined) {
           distance = 0;
         }
+        var rx1 = /./g;
+
+        const newId = String(`${data.roadEntries[i].events.trafficJams[y].start + data.roadEntries[i].events.trafficJams[y].location}`).replace(rx1, (...x) => `${x[0]}`)
+        console.log(newId);
+
+        console.log(128);
+        // console.log(data.roadEntries[i].events.trafficJams[y].start + data.roadEntries[i].events.trafficJams[y].location.replace(regex, ''));
+
+
 
         trafficJams.push({
-          jamId: `${data.roadEntries[i].events.trafficJams[y].start+data.roadEntries[i].events.trafficJams[y].location}`,
+          jamId: `${newId}`,
           location: data.roadEntries[i].events.trafficJams[y].location,
           lat: data.roadEntries[i].events.trafficJams[y].fromLoc.lat,
           long: data.roadEntries[i].events.trafficJams[y].fromLoc.lon,

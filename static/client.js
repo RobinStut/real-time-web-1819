@@ -16,6 +16,7 @@ function socket() {
     console.log('updatedDataObjectSocket');
     // console.log(data);
     updatedData = data;
+    document.getElementById('d3chart').innerHTML = `<g transform="translate(200, 200)"></g>`
     writeD3(clickedJamId)
   });
 
@@ -101,7 +102,7 @@ jamSubmit.addEventListener('submit', function (e) {
   carInput.value = kentekenData.data.plek;
 
 
-  writeD3(clickedJamId)
+  // writeD3(clickedJamId)
 
   carInput.addEventListener('change', async (event) => {
     console.log(carInput.value);
@@ -176,23 +177,33 @@ function writeD3(chosenJam) {
 
   console.log(updatedData);
   var nestedValue1 = Object.values(updatedData);
-  console.log(fakeIndex)
+  // console.log(fakeIndex)
 
   var nestedValue2 = Object.values(nestedValue1)
   var nestedValue2Array = nestedValue2[fakeIndex];
 
   var nestedValue3 = Object.values(nestedValue2Array)
   console.log('length= ' + nestedValue3.length);
-  var channels = [{
-    name: currentJamArray.location,
-    quantity: currentJamArray.distance,
-  }, ];
+  console.log((currentJamArray.distance / 1000) * 130);
 
-  for (var y = 0; y < nestedValue3.length; y++) {
-    console.log(nestedValue3[y]);
-    channels.push(nestedValue3[y])
+  document.getElementById('jamValueIndicator').innerHTML = `${(currentJamArray.distance / 1000) * 130}`
+
+
+  if (currentJamArray.distance > 0) {
+    document.getElementById('carInput').max = `${(currentJamArray.distance / 1000) * 130}`
   }
 
+  var channels = [{
+    name: currentJamArray.location,
+    quantity: `${(currentJamArray.distance/1000)*130}`,
+  }, ];
+
+  if (nestedValue3.length > 0) {
+    for (var y = 0; y < nestedValue3.length; y++) {
+      console.log(nestedValue3[y]);
+      channels.push(nestedValue3[y])
+    }
+  }
   // console.log(nestedValue2[fakeIndex][1]);
 
 

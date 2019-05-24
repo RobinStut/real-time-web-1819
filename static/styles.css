@@ -237,3 +237,8 @@ text {
     fill: white;
     text-anchor: middle;
 }
+
+#descriptionText {
+    padding-bottom: 0;
+    padding-top: 4em;
+}
